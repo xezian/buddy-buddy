@@ -1,0 +1,35 @@
+# Never commit personal buddy data — the daemon writes journal/pointer/pidfile
+# to ~/.claude/buddy/ (outside the repo), but guard against accidental copies
+# or test fixtures landing inside the project tree.
+.claude/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Node (if Phase 2 lands on Node)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+build/
+
+# Python (if Phase 2 lands on Python)
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Go (if Phase 2 lands on Go)
+vendor/
+*.exe
+
+# Logs and test output
+*.log
+coverage/
