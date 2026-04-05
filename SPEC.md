@@ -47,13 +47,13 @@ Three pieces:
 
 All commands live under the `/bb-*` prefix. Nothing uses `/buddy-*` or `/bud` — those namespaces are reserved for Anthropic's own commands so `buddy-buddy` never collides with upstream.
 
-| Command              | Purpose                                                                                                                                        |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/bb-watch`          | Start the background daemon. Requires an active tmux session.                                                                                  |
-| `/bb-unwatch`        | Stop the daemon.                                                                                                                               |
-| `/bb-missed`         | Show journal entries captured since you last looked. Marks them as seen when you exit the view. This is the "what did my buddy say while I was heads-down" command. |
-| `/bb-history [N]`    | Show the last N journal entries (or all, if small). Foundation for future summarization/charting/reflection features to be built on top.       |
-| `/bb-say [message]`  | Speak to the buddy directly. Standalone LLM call; system prompt is `companion.personality` plus a slice of recent journal entries as context. Reply is auto-captured as a new exchange record. Flags: `--context N` sets how many recent entries to include (default 5), `--no-context` disables injection, `--pin <ids>` pins specific entries instead of the recent-N default. |
+| Command             | Purpose                                                                                                                                                                                                                                                                                                                                                                          |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/bb-watch`         | Start the background daemon. Requires an active tmux session.                                                                                                                                                                                                                                                                                                                    |
+| `/bb-unwatch`       | Stop the daemon.                                                                                                                                                                                                                                                                                                                                                                 |
+| `/bb-missed`        | Show journal entries captured since you last looked. Marks them as seen when you exit the view. This is the "what did my buddy say while I was heads-down" command.                                                                                                                                                                                                              |
+| `/bb-history [N]`   | Show the last N journal entries (or all, if small). Foundation for future summarization/charting/reflection features to be built on top.                                                                                                                                                                                                                                         |
+| `/bb-say [message]` | Speak to the buddy directly. Standalone LLM call; system prompt is `companion.personality` plus a slice of recent journal entries as context. Reply is auto-captured as a new exchange record. Flags: `--context N` sets how many recent entries to include (default 5), `--no-context` disables injection, `--pin <ids>` pins specific entries instead of the recent-N default. |
 
 ---
 
@@ -69,7 +69,7 @@ The loop:
 1. You work. The daemon watches. Your buddy comments in bubbles. Each new bubble the daemon sees becomes an `obs` record in the journal.
 2. You want to know what you missed → `/bb-missed` shows the unseen slice.
 3. You want to hear from your buddy on purpose → `/bb-say` runs a direct LLM call with `companion.personality` as the system prompt. By default the last 5 journal entries are fed into the call as context, so the buddy can be shown what it said recently and respond with continuity. You can turn this off or pin specific entries.
-4. The reply becomes a new exchange record. Over time, the journal is both your record of the buddy *and* the buddy's only record of itself.
+4. The reply becomes a new exchange record. Over time, the journal is both your record of the buddy _and_ the buddy's only record of itself.
 
 Your buddy is not trained, leveled, mutated, or persisted beyond what Anthropic already persists. It stays pure. `buddy-buddy` only remembers, plays back, and relays.
 
@@ -165,8 +165,8 @@ Three genuine unknowns remain, all of which are empirical and answerable during 
 Ideas that sit above the v1 foundation and can be built later without breaking anything:
 
 - **Summarization, charts, poems, dry recaps.** `/bb-history` is the foundation for a whole family of reflection features — hand a slice of the journal to an LLM with a framing prompt ("summarize the last week in the form of a haiku" / "chart Jetsam's mood by hour") and render the result. Designed-in, not implemented in v1.
-- **Elixers and confections.** If we want to let the user temporarily adjust buddy stat levels *without* violating the "keep the buddy pure" principle, we can offer treats that the buddy may accept or decline. Acceptance is never forced; declines are real. Requires a mechanics discussion before any code. Strictly post-v1.
-- **Rename.** Intentionally dropped from v1. If Anthropic ships `/buddy rename`, we defer to them. If they don't, we may add `/bb-rename` later — it would be the *only* thing `buddy-buddy` writes to `~/.claude.json`, and that decision should be made deliberately, not by default.
+- **Elixers and confections.** If we want to let the user temporarily adjust buddy stat levels _without_ violating the "keep the buddy pure" principle, we can offer treats that the buddy may accept or decline. Acceptance is never forced; declines are real. Requires a mechanics discussion before any code. Strictly post-v1.
+- **Rename.** Intentionally dropped from v1. If Anthropic ships `/buddy rename`, we defer to them. If they don't, we may add `/bb-rename` later — it would be the _only_ thing `buddy-buddy` writes to `~/.claude.json`, and that decision should be made deliberately, not by default.
 - **Non-tmux capture paths.** tmux is required for v1. A future pass could add a macOS Accessibility API path for users who don't want tmux, at the cost of platform coupling and permission prompts. Revisit if demand materializes.
 - **Upstream bubble event stream.** File a feature request with Anthropic for an official log or event stream of bubble utterances. If they ship one, the daemon can be retired entirely — the capture path becomes "tail the stream Anthropic provides." The forward-compat rule on TOON records means any existing journal stays valid through that transition.
 
@@ -186,10 +186,10 @@ Mechanics are already resolved at the architectural level; implementation procee
 
 - [x] Create public GitHub repo: `buddy-buddy`
 - [x] Add `SPEC.md` (this file)
-- [ ] Add `README.md` (one paragraph: what it is, what it needs, how to install)
-- [ ] Add `CONTRIBUTING.md` (short: how to propose new exercises or TOON record types)
-- [ ] Choose license (MIT suggested)
-- [ ] Add `.claude/` and `~/.claude/buddy/` to `.gitignore` — never commit personal buddy data
+- [x] Add `README.md` (one paragraph: what it is, what it needs, how to install)
+- [x] Add `CONTRIBUTING.md` (short: how to propose new exercises or TOON record types)
+- [x] Choose license (MIT suggested)
+- [x] Add `.claude/` and `~/.claude/buddy/` to `.gitignore` — never commit personal buddy data
 
 ### Phase 1 — TOON foundation
 
@@ -230,6 +230,6 @@ Mechanics are already resolved at the architectural level; implementation procee
 
 ## Notes for first-time open-source contributors
 
-If you are new to open-sourcing a project: the goal for a first release is not completeness — it is a working core that others can run and react to. Phases 0–4 above are enough for a meaningful v0.1 *if you cut `/bb-say`*; Phases 0–5 are enough if you keep it. Ship that, share it, and let feedback shape what comes next.
+If you are new to open-sourcing a project: the goal for a first release is not completeness — it is a working core that others can run and react to. Phases 0–4 above are enough for a meaningful v0.1 _if you cut `/bb-say`_; Phases 0–5 are enough if you keep it. Ship that, share it, and let feedback shape what comes next.
 
 The `CONTRIBUTING.md` file is more important than it sounds. Even one paragraph saying "open an issue before a PR" will save you from reviewing unwanted rewrites of the core.
