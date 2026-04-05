@@ -193,8 +193,8 @@ Mechanics are already resolved at the architectural level; implementation procee
 
 ### Phase 1 — TOON foundation
 
-- [ ] Write a single `toon.js` / `toon.ts` parser/writer module: parse, serialize, append, validate unknown-field preservation
-- [ ] Tests: round-trip fidelity for `obs` and `ex` records, unknown-field preservation, append-only semantics, escape handling for strings with embedded quotes
+- [x] Write a single `toon.js` / `toon.ts` parser/writer module: parse, serialize, append, validate unknown-field preservation
+- [x] Tests: round-trip fidelity for `obs` and `ex` records, unknown-field preservation, append-only semantics, escape handling for strings with embedded quotes
 
 ### Phase 2 — daemon prototype (discussion gate)
 
