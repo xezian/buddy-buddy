@@ -17,7 +17,7 @@ Anthropic's `/buddy` system gives you a small terminal companion that sits besid
 ## Installation
 
 ```bash
-git clone https://github.com/jasonaleo/buddy-buddy.git
+git clone https://github.com/xezian/buddy-buddy.git
 cd buddy-buddy
 npm install
 npm run install-commands
