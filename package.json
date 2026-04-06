@@ -4,6 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test"
+    "test": "node --experimental-strip-types --test test/toon.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.17",
+    "typescript": "^6.0.2"
   }
 }

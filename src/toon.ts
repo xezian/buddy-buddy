@@ -17,14 +17,15 @@
 
 import { appendFile } from 'node:fs/promises';
 
+export type ToonValue = string | number | ToonValue[];
+export type ToonRecord = Record<string, ToonValue>;
+
 /**
  * Parse a single TOON record line into a plain JS object.
  * Numbers come back as JS numbers; everything else is a string or array.
  * Unknown fields are preserved.
- * @param {string} line
- * @returns {object}
  */
-export function parse(line) {
+export function parse(line: string): ToonRecord {
   line = line.trim();
   if (!line.startsWith('{') || !line.endsWith('}')) {
     throw new Error(`Invalid TOON record: must be wrapped in { }`);
@@ -33,7 +34,7 @@ export function parse(line) {
   if (!inner) return {};
 
   const tokens = tokenize(inner);
-  const record = {};
+  const record: ToonRecord = {};
   for (const token of tokens) {
     const colon = token.indexOf(':');
     if (colon === -1) throw new Error(`Invalid TOON token (no colon): ${token}`);
@@ -46,11 +47,9 @@ export function parse(line) {
 /**
  * Serialize a plain JS object into a TOON record line.
  * Numbers are unquoted. Strings are double-quoted. Arrays use [].
- * @param {object} record
- * @returns {string}
  */
-export function serialize(record) {
-  const parts = [];
+export function serialize(record: ToonRecord): string {
+  const parts: string[] = [];
   for (const [key, value] of Object.entries(record)) {
     parts.push(`${key}:${serializeValue(value)}`);
   }
@@ -59,10 +58,8 @@ export function serialize(record) {
 
 /**
  * Append a record to a TOON file. Creates the file if absent.
- * @param {string} filePath
- * @param {object} record
  */
-export async function append(filePath, record) {
+export async function append(filePath: string, record: ToonRecord): Promise<void> {
   await appendFile(filePath, serialize(record) + '\n', 'utf8');
 }
 
@@ -72,8 +69,8 @@ export async function append(filePath, record) {
  * Split inner record content into key:rawValue tokens.
  * Respects quoted strings (with \" and \\ escapes) and [lists].
  */
-function tokenize(inner) {
-  const tokens = [];
+function tokenize(inner: string): string[] {
+  const tokens: string[] = [];
   let current = '';
   let i = 0;
 
@@ -121,7 +118,7 @@ function tokenize(inner) {
   return tokens;
 }
 
-function parseValue(raw) {
+function parseValue(raw: string): ToonValue {
   if (raw.startsWith('"')) {
     return raw.slice(1, -1).replace(/\\(["\\])/g, '$1');
   }
@@ -131,9 +128,9 @@ function parseValue(raw) {
   return parseScalar(raw);
 }
 
-function parseListElements(inner) {
+function parseListElements(inner: string): ToonValue[] {
   if (!inner) return [];
-  const elements = [];
+  const elements: ToonValue[] = [];
   let i = 0;
   while (i < inner.length) {
     while (i < inner.length && inner[i] === ' ') i++;
@@ -162,17 +159,16 @@ function parseListElements(inner) {
   return elements;
 }
 
-function parseScalar(raw) {
+function parseScalar(raw: string): string | number {
   return /^-?\d+$/.test(raw) ? Number(raw) : raw;
 }
 
-function serializeValue(value) {
+function serializeValue(value: ToonValue): string {
   if (Array.isArray(value)) {
     return '[' + value.map(serializeValue).join(' ') + ']';
   }
   if (typeof value === 'number') {
     return String(value);
   }
-  // string (or anything else coerced to string)
-  return '"' + String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+  return '"' + value.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
 }

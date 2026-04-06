@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile, unlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { parse, serialize, append } from '../src/toon.js';
+import { parse, serialize, append } from '../src/toon.ts';
 
 // --- parse ---
 
