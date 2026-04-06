@@ -220,6 +220,12 @@ Mechanics are already resolved at the architectural level; implementation procee
 - [x] Implement context injection (default last 5 entries, `--context N`, `--no-context`, `--pin <ids>`)
 - [x] Capture reply as new `ex` record in the journal
 
+## Phase 5.5 - `bb-say` +
+
+- [ ] Ensure bb-say is routed to the current account's buddy, even if using a different account's API key
+- [ ] Response needs to capture more than the first line (responses are in chat not the bubble, seems like new lines cut it off)
+- [ ] Update instructions and install script to require the API key or disable bb-say
+
 ### Phase 6 — first public share
 
 - [ ] README with install instructions and a short demo
