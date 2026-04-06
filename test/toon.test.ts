@@ -101,6 +101,17 @@ test('round-trip string with backslash-quote sequence', () => {
   assert.deepEqual(parse(serialize(original)), original);
 });
 
+test('serialize escapes newlines so record stays one line', () => {
+  const line = serialize({ type: 'obs', v: 1, ts: 1, text: 'line one\nline two' });
+  assert.equal(line.split('\n').length, 1, 'serialized record must be a single line');
+  assert.ok(line.includes('\\n'), 'newline must be escaped as \\n');
+});
+
+test('round-trip string with embedded newline', () => {
+  const original = { type: 'obs', v: 1, ts: 1, text: 'line one\nline two\nline three' };
+  assert.deepEqual(parse(serialize(original)), original);
+});
+
 test('round-trip empty ctx list', () => {
   const original = { type: 'ex', v: 1, ts: 1, prompt: 'hi', reply: 'hey', ctx: [] };
   assert.deepEqual(parse(serialize(original)), original);

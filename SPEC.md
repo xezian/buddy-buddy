@@ -210,9 +210,9 @@ Mechanics are already resolved at the architectural level; implementation procee
 
 ### Phase 4 — `/bb-missed`, `/bb-history`
 
-- [ ] Implement `last-seen.toon` pointer
-- [ ] `/bb-missed` reads journal entries newer than the pointer, displays them, updates the pointer on exit
-- [ ] `/bb-history [N]` reads and displays the last N entries regardless of pointer
+- [x] Implement `last-seen.toon` pointer
+- [x] `/bb-missed` reads journal entries newer than the pointer, displays them, updates the pointer on exit
+- [x] `/bb-history [N]` reads and displays the last N entries regardless of pointer
 
 ### Phase 5 — `/bb-say`
 

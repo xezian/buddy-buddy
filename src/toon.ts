@@ -120,7 +120,10 @@ function tokenize(inner: string): string[] {
 
 function parseValue(raw: string): ToonValue {
   if (raw.startsWith('"')) {
-    return raw.slice(1, -1).replace(/\\(["\\])/g, '$1');
+    return raw.slice(1, -1).replace(/\\(["\\nrt])/g, (_, c) => {
+      const map: Record<string, string> = { '"': '"', '\\': '\\', n: '\n', r: '\r', t: '\t' };
+      return map[c] ?? c;
+    });
   }
   if (raw.startsWith('[')) {
     return parseListElements(raw.slice(1, -1).trim());
@@ -170,5 +173,11 @@ function serializeValue(value: ToonValue): string {
   if (typeof value === 'number') {
     return String(value);
   }
-  return '"' + value.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+  return '"' + value
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r')
+    .replace(/\t/g, '\\t')
+    + '"';
 }
