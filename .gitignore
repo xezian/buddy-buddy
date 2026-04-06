@@ -19,16 +19,9 @@ yarn-error.log*
 dist/
 build/
 
-# Python (if Phase 2 lands on Python)
-__pycache__/
-*.py[cod]
-*.egg-info/
-.venv/
-venv/
-
-# Go (if Phase 2 lands on Go)
-vendor/
-*.exe
+# dump.ts output
+dump.txt
+*.toon
 
 # Logs and test output
 *.log

@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --experimental-strip-types --test test/toon.test.ts",
+    "test": "node --experimental-strip-types --test test/*.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
