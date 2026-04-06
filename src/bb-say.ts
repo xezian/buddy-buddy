@@ -116,6 +116,14 @@ export function buildSystemPrompt(personality: string, context: ToonRecord[]): s
   return `${personality}\n\nHere is what you said recently:\n${lines.join('\n')}`;
 }
 
+// --- read API key ---
+function readApiKey(): string {
+  const data = JSON.parse(readFileSync(CLAUDE_JSON, 'utf8'));
+  const key = data?.buddyApiKey;
+  if (!key) throw new Error('buddyApiKey not found in ~/.claude.json');
+  return key;
+}
+
 // --- main ---
 
 async function main(): Promise<void> {
@@ -131,7 +139,7 @@ async function main(): Promise<void> {
   const context     = selectContext(records, args);
   const systemPrompt = buildSystemPrompt(personality, context);
 
-  const client   = new Anthropic();
+  const client   = new Anthropic({ apiKey: readApiKey() });
   const response = await client.messages.create({
     model: MODEL,
     max_tokens: 1024,
