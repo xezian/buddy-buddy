@@ -1,7 +1,6 @@
-# Never commit personal buddy data — the daemon writes journal/pointer/pidfile
-# to ~/.claude/buddy/ (outside the repo), but guard against accidental copies
-# or test fixtures landing inside the project tree.
-.claude/
+# Project-level Claude Code config — commit commands/, exclude personal settings
+.claude/*
+!.claude/commands
 
 # OS / editor cruft
 .DS_Store

@@ -198,15 +198,15 @@ Mechanics are already resolved at the architectural level; implementation procee
 
 ### Phase 2 — daemon prototype (discussion gate)
 
-- [ ] **Discussion gate:** decide on runtime language (Node / Python / Go) based on how much bubble extraction logic is expected to be. No code before this conversation.
-- [ ] Write a throwaway script that calls `tmux capture-pane -p` in a loop and dumps the output, to study what bubble rendering actually looks like in the wild
-- [ ] Develop the bubble extraction heuristic iteratively against real `/buddy` output
-- [ ] Wire the extractor into a polling loop that writes `obs` records to a test journal
+- [x] **Discussion gate:** decide on runtime language (Node / Python / Go) based on how much bubble extraction logic is expected to be. No code before this conversation.
+- [x] Write a throwaway script that calls `tmux capture-pane -p` in a loop and dumps the output, to study what bubble rendering actually looks like in the wild
+- [x] Develop the bubble extraction heuristic iteratively against real `/buddy` output
+- [x] Wire the extractor into a polling loop that writes `obs` records to a test journal
 
 ### Phase 3 — `/bb-watch`, `/bb-unwatch`
 
-- [ ] Promote the Phase 2 loop to a real daemon: background fork, pidfile, SIGTERM handling
-- [ ] Implement `/bb-watch` and `/bb-unwatch` as thin wrappers around daemon lifecycle
+- [x] Promote the Phase 2 loop to a real daemon: background fork, pidfile, SIGTERM handling
+- [x] Implement `/bb-watch` and `/bb-unwatch` as thin wrappers around daemon lifecycle
 
 ### Phase 4 — `/bb-missed`, `/bb-history`
 
