@@ -216,9 +216,9 @@ Mechanics are already resolved at the architectural level; implementation procee
 
 ### Phase 5 — `/bb-say`
 
-- [ ] Implement direct LLM call using `companion.personality` as system prompt
-- [ ] Implement context injection (default last 5 entries, `--context N`, `--no-context`, `--pin <ids>`)
-- [ ] Capture reply as new `ex` record in the journal
+- [x] Implement direct LLM call using `companion.personality` as system prompt
+- [x] Implement context injection (default last 5 entries, `--context N`, `--no-context`, `--pin <ids>`)
+- [x] Capture reply as new `ex` record in the journal
 
 ### Phase 6 — first public share
 
