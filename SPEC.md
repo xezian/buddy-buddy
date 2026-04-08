@@ -222,9 +222,18 @@ Mechanics are already resolved at the architectural level; implementation procee
 
 ## Phase 5.5 - `bb-say` +
 
-- [ ] Ensure bb-say is routed to the current account's buddy, even if using a different account's API key
-- [ ] Response needs to capture more than the first line (responses are in chat not the bubble, seems like new lines cut it off)
-- [ ] Update instructions and install script to require the API key or disable bb-say
+- [x] Ensure bb-say and other locations use the buddy's actual name, not "Jetsam" (reads `companion.name` from `~/.claude.json` at runtime)
+- [x] Missed needs to display more than the first line (fixed skill instructions to output verbatim, no truncating)
+- [x] Update instructions and install script to require the API key or disable bb-say
+
+## Phase 5.6 - further refinement
+
+- [x] Unwatch should be run in a hook on close — daemon now self-terminates after 3 consecutive pane-capture failures (~6s after pane closes)
+- [x] Optionally set a hook up that runs the daemon on launch — install script adds `SessionStart` hook to `~/.claude/settings.json`
+- [x] tmux mouse binding — install script prints `set -g mouse on` suggestion
+- [x] establish default permissions for the commands so they run without interruption — install script patches `~/.claude/settings.json` permissions
+- [x] Audit the whole codebase and package for consistency, cleanness and durability, make any needed changes
+- [ ] Test again with changes
 
 ### Phase 6 — first public share
 

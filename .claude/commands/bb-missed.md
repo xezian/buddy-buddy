@@ -5,4 +5,4 @@ Run:
 node --experimental-strip-types "$(pwd)/src/bb-missed.ts"
 ```
 
-Display the output directly to the user. No commentary needed — the script output is the full response.
+Output the script's stdout exactly as-is, preserving every line and newline. No summarizing, no truncating, no commentary.

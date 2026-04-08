@@ -11,6 +11,17 @@ export const BUDDY_DIR      = join(homedir(), '.claude', 'buddy');
 export const JOURNAL_PATH   = join(BUDDY_DIR, 'journal.toon');
 export const LAST_SEEN_PATH = join(BUDDY_DIR, 'last-seen.toon');
 
+const CLAUDE_JSON = join(homedir(), '.claude.json');
+
+function readBuddyName(): string {
+  try {
+    const data = JSON.parse(readFileSync(CLAUDE_JSON, 'utf8'));
+    const name = data?.companion?.name;
+    if (typeof name === 'string' && name.trim()) return name.trim();
+  } catch { /* ignore */ }
+  return 'buddy';
+}
+
 /** Parse every non-blank line in the journal file into a ToonRecord array. */
 export function readJournal(path = JOURNAL_PATH): ToonRecord[] {
   let raw: string;
@@ -59,7 +70,8 @@ export function formatEntry(record: ToonRecord): string {
     return `${header}\n${record.text as string}`;
   }
   if (type === 'ex') {
-    return `${header}\nYou: ${record.prompt as string}\nJetsam: ${record.reply as string}`;
+    const name = readBuddyName();
+    return `${header}\nYou: ${record.prompt as string}\n${name}: ${record.reply as string}`;
   }
   return `${header}\n${JSON.stringify(record)}`;
 }

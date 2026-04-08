@@ -1,4 +1,4 @@
-Start the buddy-buddy daemon to capture Jetsam's speech bubbles in the background.
+Start the buddy-buddy daemon to capture your buddy's speech bubbles in the background.
 
 Use the Bash tool to run each step.
 
@@ -31,4 +31,4 @@ cat ~/.claude/buddy/daemon.pid 2>/dev/null || echo "failed"
 If output is `failed`, report: "Daemon failed to start. Check ~/.claude/buddy/daemon.log."
 
 **5. Report success**
-Tell the user: "Watching. Jetsam's bubbles are being captured to ~/.claude/buddy/journal.toon"
+Tell the user: "Watching. Your buddy's bubbles are being captured to ~/.claude/buddy/journal.toon"

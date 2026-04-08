@@ -45,13 +45,21 @@ process.on('SIGTERM', () => { cleanup(); process.exit(0); });
 process.on('SIGINT',  () => { cleanup(); process.exit(0); });
 
 let lastText = '';
+let consecutiveFailures = 0;
+const MAX_FAILURES = 3;
 
 async function poll(): Promise<void> {
   let pane: string;
   try {
     pane = execSync(`tmux capture-pane -p -t ${paneTarget}`, { encoding: 'utf8' });
+    consecutiveFailures = 0;
   } catch {
-    return; // pane gone or tmux unavailable; skip tick
+    consecutiveFailures++;
+    if (consecutiveFailures >= MAX_FAILURES) {
+      cleanup();
+      process.exit(0);
+    }
+    return;
   }
 
   const match = extractBubble(pane);

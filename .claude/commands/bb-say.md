@@ -10,4 +10,4 @@ Run:
 node --experimental-strip-types "$(pwd)/src/bb-say.ts" $ARGUMENTS
 ```
 
-Display the output (your buddy's reply) to the user. No extra commentary needed.
+Output the script's stdout exactly as-is, preserving every line and newline. No summarizing, no truncating, no commentary.
