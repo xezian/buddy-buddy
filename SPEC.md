@@ -2,7 +2,7 @@
 
 > Exo-memory for your Claude Code `/buddy` — a way to hold on to the things they say in passing, and to speak with them on purpose.
 
-**Status:** Pre-implementation — spec only (pass 2, significantly reframed from pass 1)
+**Status:** Phases 0–5.6 complete (TypeScript / Node 22.6+). Phase 6 (first public share) is next.
 **Intended audience:** Claude Code users on Pro/Max plans with `/buddy` enabled
 **License:** MIT
 
@@ -15,7 +15,7 @@
 1. **Memory of what your buddy has said.** Speech bubbles are ephemeral — they flash next to your input box and are overwritten in place. If you were heads-down and missed one, it's gone. `buddy-buddy` runs a background observer that captures every bubble it sees to a persistent journal, so "I missed it" becomes "let me look."
 2. **A way to speak with your buddy directly, and show them their own past.** Your buddy has no memory across sessions — species, rarity, and stats are hash-recomputed every time you launch Claude Code; only `name`, `personality`, and `hatchedAt` persist. `buddy-buddy` lets you address your buddy via a dedicated LLM call, with optional slices of the journal handed back as "here's what you said before" context. The buddy becomes the main character; buddy-buddy is its exo-memory.
 
-The skill is intentionally a **thin, read-only wrapper** around Anthropic's companion state. It reads `~/.claude.json`'s `companion.personality` to build the buddy's voice; it never writes there. All persistent state lives under `~/.claude/buddy/`.
+The skill is intentionally a **thin, read-only wrapper** around Anthropic's companion state. It reads `~/.claude.json`'s `companion.personality` and `companion.name` to build the buddy's voice and display name; it never writes there. All persistent state lives under `~/.claude/buddy/`.
 
 ---
 
@@ -37,7 +37,7 @@ This means:
 
 Three pieces:
 
-1. **The daemon** — a small background process that polls `tmux capture-pane -p` at ~2s intervals while you work, extracts any bubble region from the captured pane, diffs against the previous poll, and appends new bubble text to the journal. Raw captures live in memory only and are discarded after each poll; only the extracted clean bubble text ever touches disk.
+1. **The daemon** — a small background process that discovers all tmux panes via `tmux list-panes -a` and polls each with `tmux capture-pane -p` at ~2s intervals while you work. It extracts any bubble region from each captured pane, diffs against the previous poll (per-pane), and appends new bubble text to the journal. Raw captures live in memory only and are discarded after each poll; only the extracted clean bubble text ever touches disk.
 2. **The journal** — an append-only TOON file under `~/.claude/buddy/` containing two record types: **observations** (bubbles the daemon captured) and **exchanges** (prompts sent to the buddy and their replies via `/bb-say`).
 3. **The commands** — five slash commands under the `/bb-*` namespace, covering daemon control, journal readback, and direct address to the buddy.
 
@@ -108,7 +108,7 @@ The `ctx` field on exchanges is a list of `ts` values of entries that were fed i
 
 ## Storage contract
 
-`buddy-buddy` is **strictly read-only to `~/.claude.json`**. It reads the `companion.personality` field to build the buddy's system prompt in `/bb-say`. It does not read any other field from `~/.claude.json`, and it never writes to anything under `companion` (or anywhere else in that file).
+`buddy-buddy` is **strictly read-only to `~/.claude.json`**. It reads `companion.personality` (system prompt for `/bb-say`) and `companion.name` (display name in output). It does not read any other companion fields from `~/.claude.json`, and it never writes to anything under `companion` (or anywhere else in that file). It also reads `buddyApiKey` from `~/.claude.json` for the `/bb-say` API call.
 
 All persistent state `buddy-buddy` owns lives under `~/.claude/buddy/`:
 
@@ -125,13 +125,15 @@ This read-only boundary is the stronger successor to the original spec's "thin w
 
 ## Daemon design
 
-- **Language / runtime:** TBD in Phase 2. Candidates: Node (matches Claude Code's ecosystem), Python (fastest for a tmux-scraping prototype), Go (single static binary, easy to distribute). Decision deferred until we know how much bubble extraction logic ends up being.
+- **Language / runtime:** TypeScript on Node 22.6+ (chosen in Phase 2 — matches Claude Code's ecosystem, `--experimental-strip-types` avoids a build step).
 - **Requirement:** must be launched from inside an active tmux session. `/bb-watch` errors out with a clear message if `$TMUX` is unset.
-- **Polling:** `tmux capture-pane -p` every 2 seconds. Hardcoded in v1; no config file. Tune later if empirically wrong.
-- **Extraction:** matches a bubble-region pattern against the captured pane text. The specific pattern (box-drawing glyphs, position heuristics) is **empirical** — it will be discovered during Phase 2 by running the daemon against real `/buddy` output and iterating on the extractor until it's reliable. The extractor's correctness is the single biggest technical risk in v1.
-- **Deduplication:** each poll's extracted bubble text is compared to the previous poll's. Identical text → no record emitted. Different text → one new `obs` record appended.
+- **Auto-start:** the install script adds a `SessionStart` hook to `~/.claude/settings.json` that launches the daemon automatically when Claude Code starts in tmux.
+- **Pane discovery:** each tick runs `tmux list-panes -a` to discover all panes. No arguments needed — one daemon watches everything.
+- **Polling:** `tmux capture-pane -p` on each discovered pane, every 2 seconds. Hardcoded in v1; no config file.
+- **Extraction:** matches a bubble-region pattern (box-drawing glyphs `╭╮╰╯│─`) against the captured pane text. The extractor scans from the bottom of the pane upward, looking for the most recent bubble.
+- **Deduplication:** per-pane — each pane's extracted bubble text is compared to that pane's previous poll. Identical text → no record emitted. Different text → one new `obs` record appended. Stale pane entries are pruned when a pane disappears.
 - **Memory model (Model A):** raw captured pane text lives only in a local variable for the duration of each poll. It is never written to disk. Only the extracted clean bubble text, once validated as new, reaches `journal.toon`.
-- **Lifecycle:** `/bb-watch` forks the daemon to the background and writes `daemon.pid`. `/bb-unwatch` reads the pidfile and sends SIGTERM. Daemon handles SIGTERM cleanly, flushes any buffered writes, removes the pidfile, exits.
+- **Lifecycle:** `/bb-watch` forks the daemon to the background and writes `daemon.pid`. `/bb-unwatch` reads the pidfile and sends SIGTERM. Daemon handles SIGTERM cleanly, removes the pidfile, exits. The daemon also self-terminates after 3 consecutive failures to list panes (~6s), so it stops gracefully when tmux exits.
 
 ---
 
@@ -233,7 +235,7 @@ Mechanics are already resolved at the architectural level; implementation procee
 - [x] tmux mouse binding — install script prints `set -g mouse on` suggestion
 - [x] establish default permissions for the commands so they run without interruption — install script patches `~/.claude/settings.json` permissions
 - [x] Audit the whole codebase and package for consistency, cleanness and durability, make any needed changes
-- [ ] Test again with changes
+- [x] Test again with changes
 
 ### Phase 6 — first public share
 

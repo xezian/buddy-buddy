@@ -34,7 +34,7 @@ Summarization, charting, poem generation, mood graphs, dry recaps, and similar r
 ## What will be declined
 
 - Anything that wraps or replaces `claude` as the user's entry point (PTY wrapping, shell alias hijacking, etc.)
-- Anything that reads or writes outside the read-only contract with `~/.claude.json` (specifically: anything that touches fields other than `companion.personality`, or writes to that file at all)
+- Anything that reads or writes outside the read-only contract with `~/.claude.json` (specifically: anything that touches fields other than `companion.personality`, `companion.name`, and `buddyApiKey`, or writes to that file at all)
 - Any mechanism to override, persist, or mutate buddy stats (DEBUGGING, PATIENCE, CHAOS, WISDOM, SNARK) — those belong to Anthropic
 - Remote sync, telemetry, or any network IO beyond the `/bb-say` LLM call
 - Patching, decompiling, or instrumenting the Claude Code binary

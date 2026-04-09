@@ -16,6 +16,27 @@ for src in "$BUDDY_DIR/.claude/commands"/bb-*.md; do
   echo "  installed: $DEST/$name"
 done
 
+# --- generate bin wrappers ---
+BIN_DIR="$HOME/.claude/buddy/bin"
+mkdir -p "$BIN_DIR"
+
+NODE_FLAGS="--no-warnings --experimental-strip-types"
+
+for pair in \
+  "bb-missed:$BUDDY_DIR/src/bb-missed.ts" \
+  "bb-history:$BUDDY_DIR/src/bb-history.ts" \
+  "bb-say:$BUDDY_DIR/src/bb-say.ts" \
+  "bb-daemon:$BUDDY_DIR/src/daemon.ts"; do
+  cmd="${pair%%:*}"
+  script="${pair#*:}"
+  cat > "$BIN_DIR/$cmd" <<WRAPPER
+#!/usr/bin/env bash
+exec node $NODE_FLAGS "$script" "\$@"
+WRAPPER
+  chmod +x "$BIN_DIR/$cmd"
+  echo "  wrapper: $BIN_DIR/$cmd"
+done
+
 # --- patch ~/.claude/settings.json ---
 SETTINGS="$HOME/.claude/settings.json"
 
@@ -32,11 +53,12 @@ except (FileNotFoundError, json.JSONDecodeError):
 
 # permissions
 s.setdefault('permissions', {}).setdefault('allow', [])
+bin = '~/.claude/buddy/bin'
 new_perms = [
-    f'Bash(node --experimental-strip-types "{buddy_dir}/src/bb-missed.ts")',
-    f'Bash(node --experimental-strip-types "{buddy_dir}/src/bb-history.ts"*)',
-    f'Bash(node --experimental-strip-types "{buddy_dir}/src/bb-say.ts"*)',
-    f'Bash(node --experimental-strip-types "{buddy_dir}/src/daemon.ts"*)',
+    f'Bash({bin}/bb-missed)',
+    f'Bash({bin}/bb-history*)',
+    f'Bash({bin}/bb-say*)',
+    f'Bash({bin}/bb-daemon*)',
     'Bash(cat ~/.claude/buddy/daemon.pid*)',
     'Bash(kill -0 *)',
     'Bash(kill -TERM *)',
@@ -50,18 +72,22 @@ for p in new_perms:
 # SessionStart hook — start daemon automatically when in tmux
 start_cmd = (
     f'[ -n "$TMUX" ] && '
-    f'pid=$(cat ~/.claude/buddy/daemon.pid 2>/dev/null) && '
+    f'( pid=$(cat ~/.claude/buddy/daemon.pid 2>/dev/null) && '
     f'kill -0 "$pid" 2>/dev/null || '
     f'( mkdir -p ~/.claude/buddy && '
-    f'nohup node --experimental-strip-types "{buddy_dir}/src/daemon.ts" "${{TMUX_PANE}}" '
-    f'</dev/null >>~/.claude/buddy/daemon.log 2>&1 & disown $! ); true'
+    f'nohup {bin}/bb-daemon '
+    f'</dev/null >>~/.claude/buddy/daemon.log 2>&1 & disown $! ) ); true'
 )
-hook_entry = {'matcher': '', 'hooks': [{'type': 'command', 'command': start_cmd}]}
+hook_entry = {'hooks': [{'type': 'command', 'command': start_cmd}]}
 
-hooks = s.setdefault('SessionStart', [])
+all_hooks = s.setdefault('hooks', {})
+session_hooks = all_hooks.setdefault('SessionStart', [])
 # replace any existing buddy-buddy SessionStart hook
-hooks[:] = [h for h in hooks if buddy_dir not in json.dumps(h)]
-hooks.append(hook_entry)
+session_hooks[:] = [h for h in session_hooks if 'bb-daemon' not in json.dumps(h)]
+session_hooks.append(hook_entry)
+
+# clean up old mis-placed key from earlier installs
+s.pop('SessionStart', None)
 
 with open(settings_path, 'w') as f:
     json.dump(s, f, indent=2)

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-Pre-implementation. The repository currently contains design documentation (`SPEC.md`, this file, `README.md`, `CONTRIBUTING.md`), `LICENSE`, and `.gitignore` — no source code, no package manifest, no build system, no tests yet. Do not invent build/lint/test commands; there are none until Phase 2 begins.
+Phases 0–5.6 are complete. The codebase is TypeScript (Node 22.6+), with source in `src/`, slash commands in `.claude/commands/`, and an install script in `scripts/`. Tests live in `test/`. Build/run: `npm install`, `npm run install-commands`, `npm test`.
 
 **`SPEC.md` has been through a significant reframe (pass 2).** The original draft described a training/logging/rename layer with mutable "soul" text; that was scrapped in favor of the current design once we investigated how buddy bubbles actually work. If you see references in git history to `/buddy-train`, `/buddy-log`, `/buddy-rename`, `/bud`, `companion.soul`, or "soul mutations", those are pass 1 and no longer apply. Read `SPEC.md` end-to-end before making non-trivial decisions — it is the source of truth.
 
@@ -25,11 +25,11 @@ This single fact is why `buddy-buddy` needs a background daemon. If a future tas
 
 ## Architectural boundaries (hard rules)
 
-- **`~/.claude.json` is strictly read-only.** `buddy-buddy` reads `companion.personality` to build the buddy's system prompt in `/bb-say`, and reads nothing else from that file. It never writes to anything under `companion`. This is the stronger successor to the original spec's "thin wrapper" principle and is the single most important invariant in the project. Any future schema change from Anthropic becomes a read-path concern only.
-- **All persistent state lives under `~/.claude/buddy/`:** `journal.toon` (append-only), `last-seen.toon` (single-record pointer for `/bb-missed`), `daemon.pid` (lifecycle).
+- **`~/.claude.json` is strictly read-only.** `buddy-buddy` reads `companion.personality` and `companion.name` to build the buddy's system prompt and display name. It never writes to anything under `companion`. This is the stronger successor to the original spec's "thin wrapper" principle and is the single most important invariant in the project. Any future schema change from Anthropic becomes a read-path concern only.
+- **All persistent state lives under `~/.claude/buddy/`:** `journal.toon` (append-only), `last-seen.toon` (single-record pointer for `/bb-missed`), `daemon.pid` (lifecycle), `bin/` (wrapper scripts installed by `install-commands`).
 - **The daemon captures in memory only (Model A).** Raw `tmux capture-pane` output lives in a local variable for the duration of one poll and is discarded. Only extracted clean bubble text ever touches disk. No raw snapshot is ever written, not even temporarily, not even under a debug flag in production code paths.
 - **`/bb-*` is the command namespace.** Never use `/buddy-*`, `/bud`, or any similar prefix — those are reserved for Anthropic's own commands so `buddy-buddy` never collides with upstream.
-- **tmux is required for the daemon.** `/bb-watch` must error out cleanly if `$TMUX` is unset. No PTY wrapping, no Accessibility API, no stdout interception, no binary instrumentation — all explicitly excluded by scope.
+- **tmux is required for the daemon.** `/bb-watch` must error out cleanly if `$TMUX` is unset. The daemon auto-discovers and polls all tmux panes (not just the one where it was started). No PTY wrapping, no Accessibility API, no stdout interception, no binary instrumentation — all explicitly excluded by scope.
 
 ## TOON format rules
 
@@ -58,25 +58,15 @@ See SPEC.md §"Core commands" for details.
 
 ## Implementation phase order
 
-Do not skip phases. v1 ships when Phases 0–5 are complete; Phase 6 is the public-share pass.
+Phases 0–5.6 are complete. Phase 6 (first public share) is next. See SPEC.md for the full phase checklist.
 
-- **Phase 0:** repo setup — README, CONTRIBUTING, license, `.gitignore`
-- **Phase 1:** TOON parser/writer (`toon.js` or `toon.ts`), with round-trip and unknown-field-preservation tests
-- **Phase 2:** daemon prototype — **discussion gate**: runtime language (Node / Python / Go) must be chosen before code. Iterative development of the bubble extraction heuristic against real `/buddy` output.
-- **Phase 3:** `/bb-watch`, `/bb-unwatch`
-- **Phase 4:** `/bb-missed`, `/bb-history`
-- **Phase 5:** `/bb-say` with context injection
-- **Phase 6:** first public share
+## Resolved mechanics
 
-## Open mechanics (empirical — resolve during implementation)
+These were open questions during design, now settled:
 
-Three unknowns, all answerable by trying things rather than in advance:
-
-- **Bubble extraction heuristic.** What glyph pattern reliably identifies a bubble region across terminal themes and Claude Code versions? First guess: runs of box-drawing characters near the bottom of the pane. Refine by running the daemon against real output.
-- **Polling interval.** 2 seconds is the starting guess. Tune if bubbles are empirically faster or slower.
-- **Context framing in `/bb-say`.** How should past journal entries be presented to the buddy in its system prompt? Start with "here is what you said recently:" framing, iterate based on how replies feel.
-
-When a task touches one of these, try something and report what happened — do not ask the user to decide in the abstract. These are the only open questions; everything else is settled.
+- **Bubble extraction heuristic:** scans from bottom of pane upward for box-drawing glyphs (`╭╮╰╯│─`), extracts interior text between left and right `│` borders. See `src/extract.ts`.
+- **Polling interval:** 2 seconds — works well empirically, `capture-pane` is cheap.
+- **Context framing in `/bb-say`:** "Here is what you said recently:" followed by timestamped entries. See `src/bb-say.ts:buildSystemPrompt`.
 
 ## Collaboration notes
 

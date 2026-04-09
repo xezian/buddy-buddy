@@ -22,7 +22,7 @@ mkdir -p ~/.claude/buddy
 
 **4. Launch daemon (detached)**
 ```bash
-nohup node --experimental-strip-types "$(pwd)/src/daemon.ts" "${TMUX_PANE}" \
+nohup ~/.claude/buddy/bin/bb-daemon \
   </dev/null >>~/.claude/buddy/daemon.log 2>&1 &
 disown $!
 sleep 1

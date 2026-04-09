@@ -11,7 +11,7 @@ Anthropic's `/buddy` system gives you a small terminal companion that sits besid
 - Claude Code with `/buddy` enabled (Pro or Max plan)
 - Node.js 22.6+
 - `tmux` — Claude Code must run inside a tmux session so the daemon can poll `tmux capture-pane`
-- `ANTHROPIC_API_KEY` set in your environment (used by `/bb-say` to make a standalone API call)
+- An Anthropic API key stored as `buddyApiKey` in `~/.claude.json` (used by `/bb-say` for standalone LLM calls — not required for the other commands)
 - macOS or Linux (WSL2 on Windows should work; Windows-native terminals are not supported)
 
 ## Installation
@@ -23,7 +23,7 @@ npm install
 npm run install-commands
 ```
 
-`install-commands` copies the five `/bb-*` slash commands to `~/.claude/commands/` and wires them to the correct path automatically. Restart Claude Code after running it.
+`install-commands` copies the five `/bb-*` slash commands to `~/.claude/commands/`, generates wrapper scripts in `~/.claude/buddy/bin/`, sets up auto-start via a `SessionStart` hook, and configures permissions so the commands run without prompts. Restart Claude Code after running it.
 
 Verify tmux is installed:
 
@@ -41,13 +41,11 @@ tmux new-session -s work
 claude
 ```
 
-**In a second pane (`Ctrl+B "` to split, `Ctrl+B ↑` to switch back), start the daemon:**
+The daemon starts automatically when Claude Code launches inside tmux (via a `SessionStart` hook). It watches all tmux panes, so multiple Claude Code instances are covered. You can also start it manually:
 
 ```
 /bb-watch
 ```
-
-The daemon now captures every bubble Jetsam speaks while you work.
 
 **See what you missed:**
 
@@ -91,6 +89,7 @@ Everything is stored in `~/.claude/buddy/`:
   last-seen.toon    # pointer for /bb-missed
   daemon.pid        # daemon lifecycle
   daemon.log        # daemon stderr
+  bin/              # wrapper scripts for clean command display
 ```
 
 The journal format (TOON) is append-only, one record per line, human-readable:

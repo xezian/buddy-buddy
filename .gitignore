@@ -10,7 +10,7 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Node (if Phase 2 lands on Node)
+# Node
 node_modules/
 npm-debug.log*
 yarn-debug.log*

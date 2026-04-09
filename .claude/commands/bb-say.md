@@ -7,7 +7,7 @@ $ARGUMENTS contains the user's message and any optional flags:
 
 Run:
 ```bash
-node --experimental-strip-types "$(pwd)/src/bb-say.ts" $ARGUMENTS
+~/.claude/buddy/bin/bb-say $ARGUMENTS
 ```
 
 Output the script's stdout exactly as-is, preserving every line and newline. No summarizing, no truncating, no commentary.
