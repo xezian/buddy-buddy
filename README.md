@@ -1,5 +1,7 @@
 # buddy-buddy
 
+> **April 9, 2025 update:** Anthropic's `/buddy` companion was a April Fools feature (not very funny) and has been removed from Claude Code ([#45488](https://github.com/anthropics/claude-code/issues/45488)). `buddy-buddy` was built in the brief window when buddies were real. The code still works if the feature ever returns — until then, consider this repo a monument to companions lost too soon. 🪦
+
 Exo-memory for your Claude Code `/buddy` companion. Captures the things your buddy says in passing to a persistent journal, and lets you speak with them directly — with their own past handed back as context.
 
 Anthropic's `/buddy` system gives you a small terminal companion that sits beside your input box and comments in speech bubbles. Those bubbles are ephemeral: overwritten in place the moment anything redraws the screen, never entering your terminal's scrollback. If you missed what your buddy said, it's gone. On top of that, your buddy has no memory across sessions.
